@@ -288,7 +288,8 @@
             <div style="font-size:0.65rem;color:#5a6080;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Quick Fill</div>
             <button class="btn btn-insert" style="opacity:0.7;" onclick="quickFill([10,5,20,3,7,15,30])">Balanced (7 nodes)</button>
             <button class="btn btn-insert" style="opacity:0.7;" onclick="quickFill([5,4,3,2,1])">Skewed left</button>
-            <button class="btn btn-insert" style="opacity:0.7;" onclick="quickFillRandom()">Random ×7</button>
+            <button class="btn btn-insert" style="opacity:0.7;" onclick="quickFillRandom(10)">Random ×10</button>
+            <button class="btn btn-insert" style="opacity:0.7;" onclick="quickFillRandom(20)">Random ×20</button>
         </div>
 
     </aside>
@@ -448,9 +449,9 @@
         addHistory(`Quick fill → [${values.join(', ')}]`, 'info');
     }
 
-    async function quickFillRandom() {
-        const pool = Array.from({length: 30}, (_,i) => i*3+5);
-        const shuffled = pool.sort(() => Math.random()-0.5).slice(0,7);
+    async function quickFillRandom(count = 10) {
+        const pool = Array.from({length: 100}, (_,i) => i*2+1); // odd numbers 1..199
+        const shuffled = pool.sort(() => Math.random()-0.5).slice(0, count);
         await quickFill(shuffled);
     }
 
