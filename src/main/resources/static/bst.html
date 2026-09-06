@@ -249,10 +249,9 @@
             <div class="op-card-body">
                 <div class="field">
                     <label>Value</label>
-                    <input id="del-val" type="number" placeholder="e.g. 42" disabled style="opacity:0.4;">
+                    <input id="del-val" type="number" placeholder="e.g. 42" onkeydown="if(event.key==='Enter')api('delete')">
                 </div>
-                <button class="btn btn-todo" disabled>Delete (coming soon)</button>
-                <div class="todo-note">Implement deleteNode first</div>
+                <button class="btn btn-delete" onclick="api('delete')">Delete</button>
             </div>
         </div>
 
@@ -261,10 +260,9 @@
             <div class="op-card-body">
                 <div class="field">
                     <label>Value</label>
-                    <input id="search-val" type="number" placeholder="e.g. 42" disabled style="opacity:0.4;">
+                    <input id="search-val" type="number" placeholder="e.g. 42" onkeydown="if(event.key==='Enter')api('search')">
                 </div>
-                <button class="btn btn-todo" disabled>Search (coming soon)</button>
-                <div class="todo-note">Implement searchNode first</div>
+                <button class="btn btn-search" onclick="api('search')">Search</button>
             </div>
         </div>
 
@@ -374,6 +372,29 @@
                     data = await callApi(`${BASE}/insert`, 'POST', { value: v });
                     histMsg = `Insert ${v}`;
                     break;
+                }
+                case 'delete': {
+                    const v = getInt('del-val');
+                    data = await callApi(`${BASE}/delete`, 'DELETE', { value: v });
+                    histMsg = `Delete ${v}`;
+                    msgType = resolveType(data.message, 'success');
+                    break;
+                }
+                case 'search': {
+                    const v = getInt('search-val');
+                    data = await callApi(`${BASE}/search/${v}`, 'GET');
+                    const found = data.message && data.message.toLowerCase().includes('found') && !data.message.toLowerCase().includes('not');
+                    if (found) {
+                        highlightNode(v);
+                        showMsg(`✓ Value ${v} found in the tree`, 'success');
+                    } else {
+                        showMsg(`✗ Value ${v} not found`, 'error');
+                    }
+                    histMsg = `Search ${v} → ${found ? 'found' : 'not found'}`;
+                    addHistory(histMsg, found ? 'success' : 'error');
+                    render(data);
+                    if (found) highlightNode(v);
+                    return;
                 }
                 case 'clear':
                     data = await callApi(`${BASE}/clear`, 'DELETE');
@@ -506,6 +527,18 @@
             text.classList.remove('visiting', 'visited');
         });
         document.getElementById('traversal-bar').classList.remove('visible');
+    }
+
+    // ── Search highlight ──
+    function highlightNode(value) {
+        const entry = nodeMap[value];
+        if (!entry) return;
+        entry.circle.classList.add('found');
+        entry.text.style.fill = '#4ade80';
+        setTimeout(() => {
+            entry.circle.classList.remove('found');
+            entry.text.style.fill = '';
+        }, 2500);
     }
 
     // ── Message ──
