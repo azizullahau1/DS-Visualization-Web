@@ -1,5 +1,6 @@
 package org.example.dsvisualizationweb.servicesimpls;
 
+import com.sun.source.tree.Tree;
 import org.example.dsvisualizationweb.dtos.general.TreeNode;
 import org.example.dsvisualizationweb.dtos.response.TreeNodeResponse;
 import org.example.dsvisualizationweb.dtos.response.TreeResponse;
@@ -61,12 +62,6 @@ public class BSTServiceImpl implements BinaryTreeService {
         return buildResponse("Inserted " + value);
     }
 
-    // Recursive helper — returns the (possibly new) root of the subtree
-    private TreeNode insertNode(TreeNode node, int value) {
-        // TODO
-        return node;
-    }
-
     // -------------------------------------------------------------------------
     // DELETE
     // Three cases:
@@ -78,18 +73,130 @@ public class BSTServiceImpl implements BinaryTreeService {
     @Override
     public TreeResponse delete(int value) {
         // TODO
-        return buildResponse("Deleted " + value);
-    }
 
-    private TreeNode deleteNode(TreeNode node, int value) {
-        // TODO
-        return node;
-    }
+        TreeNode tempNode = root;
+        TreeNode parentNode = null;
+        TreeNode nodeToBeDeleted = null;
 
-    // Find the minimum node in a subtree (used for inorder successor)
-    private TreeNode findMin(TreeNode node) {
-        // TODO
-        return node;
+        while(tempNode!=null){
+
+            if(tempNode.value == value){
+                nodeToBeDeleted = tempNode;
+                break;
+            }
+            else if(value < tempNode.value){
+                parentNode = tempNode;
+                tempNode = tempNode.left;
+            }
+            else{
+                parentNode = tempNode;
+                tempNode = tempNode.right;
+            }
+        }
+
+        if(nodeToBeDeleted == null){
+            return buildResponse("Node not found " + value);
+        }
+
+        // case 1 - No Childs
+        if(nodeToBeDeleted.left == null && nodeToBeDeleted.right == null){
+            if(parentNode == null){
+                root = null; // when root is deleted and it has no childs
+                size--;
+            }
+            else{
+                if(nodeToBeDeleted.value < parentNode.value){
+                    // left child of parent
+                    parentNode.left = null;
+                    size--;
+                }
+                else{
+                    // right child of parent
+                    parentNode.right = null;
+                    size--;
+                }
+            }
+            return buildResponse("Deleted " + value);
+        }
+
+        // case 2: when of the child is present
+        else if( nodeToBeDeleted.left == null || nodeToBeDeleted.right == null){
+
+            if(parentNode == null){
+                root = nodeToBeDeleted.left !=null ? nodeToBeDeleted.left : nodeToBeDeleted.right;
+                size--;
+            }
+            else{
+                if(nodeToBeDeleted.value<parentNode.value){
+                    parentNode.left = nodeToBeDeleted.left != null ? nodeToBeDeleted.left : nodeToBeDeleted.right;
+                    size--;
+                }
+                else{
+                    parentNode.right = nodeToBeDeleted.left != null ? nodeToBeDeleted.left : nodeToBeDeleted.right;
+                    size--;
+                }
+            }
+
+            return buildResponse("Deleted " + value);
+
+        }
+
+        // case 3: both childern are present
+        else{
+
+            // No left successor
+            if(nodeToBeDeleted.right.left == null){
+              nodeToBeDeleted.right.left = nodeToBeDeleted.left;
+
+              if(parentNode == null){
+                  root = nodeToBeDeleted.right;
+              }
+
+              else {
+                  if (nodeToBeDeleted.value < parentNode.value) {
+                      parentNode.left = nodeToBeDeleted.right;
+                  } else {
+                      parentNode.right = nodeToBeDeleted.right;
+                  }
+              }
+              size--;
+            }
+            else{
+                // go to right -> left most child
+                TreeNode leftMostSuccessor = nodeToBeDeleted.right.left;
+                TreeNode leftMostSuccessorParent = nodeToBeDeleted.right;
+                while (leftMostSuccessor.left != null){
+                    leftMostSuccessorParent = leftMostSuccessor;
+                    leftMostSuccessor = leftMostSuccessor.left;
+                }
+
+                // Now I have parentNode , NodeToBeDeleted , LeftMostSuccessor
+
+
+                leftMostSuccessorParent.left = leftMostSuccessor.right;
+
+                TreeNode leftTreeForDeletedNode = nodeToBeDeleted.left;
+                TreeNode rightTreeForDeletedNode = nodeToBeDeleted.right;
+
+                leftMostSuccessor.left = leftTreeForDeletedNode;
+                leftMostSuccessor.right = rightTreeForDeletedNode;
+
+
+                if(parentNode == null){
+                    root = leftMostSuccessor;
+                }
+                else {
+                    if (nodeToBeDeleted.value < parentNode.value) {
+                        parentNode.left = leftMostSuccessor;
+                    } else {
+                        parentNode.right = leftMostSuccessor;
+                    }
+                }
+                size--;
+            }
+
+            return buildResponse("Deleted " + value);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -99,12 +206,27 @@ public class BSTServiceImpl implements BinaryTreeService {
     @Override
     public TreeResponse search(int value) {
         // TODO: traverse left/right based on comparison, return found/not found
-        return buildResponse("Search: " + value);
-    }
 
-    private boolean searchNode(TreeNode node, int value) {
-        // TODO
-        return false;
+        if(root == null){
+            return buildResponse("Empty Tree!");
+        }
+
+        TreeNode tempNode = root;
+
+        while(tempNode != null){
+            if(value == tempNode.value){
+                return buildResponse("Node found");
+            }
+
+            if(value < tempNode.value){
+                tempNode = tempNode.left;
+            }
+            else{
+                tempNode = tempNode.right;
+            }
+        }
+
+        return buildResponse("Node not fond: " + value);
     }
 
     // -------------------------------------------------------------------------
