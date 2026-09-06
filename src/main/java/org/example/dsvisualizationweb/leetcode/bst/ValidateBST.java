@@ -1,5 +1,10 @@
 package org.example.dsvisualizationweb.leetcode.bst;
 
+import com.sun.source.tree.Tree;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * LeetCode 98 — Validate Binary Search Tree (Medium)
  *
@@ -31,16 +36,33 @@ package org.example.dsvisualizationweb.leetcode.bst;
  */
 public class ValidateBST {
 
+    List<TreeNode> invalidTrees = new ArrayList<>();
+
     static class TreeNode {
         int val;
         TreeNode left, right;
         TreeNode(int val) { this.val = val; }
     }
 
-    public boolean isValidBST(TreeNode root) {
+    public boolean validate(TreeNode root,long min, long max) {
         // TODO: implement
-        return false;
+
+        if (root == null){
+            return true;
+        }
+
+        if(root.val < min || root.val > max){
+            return false;
+        }
+
+        boolean leftSubTreeRes = validate(root.left,min,root.val);
+        boolean rightSubTreeRes = validate(root.right,root.val,max);
+
+        return leftSubTreeRes && rightSubTreeRes;
     }
+
+
+
 
     // -------------------------------------------------------------------------
     // Test
@@ -52,15 +74,15 @@ public class ValidateBST {
         TreeNode root1 = new TreeNode(2);
         root1.left = new TreeNode(1);
         root1.right = new TreeNode(3);
-        System.out.println("Test 1: " + solution.isValidBST(root1)); // true
+        System.out.println("Test 1: " + solution.validate(root1,Integer.MIN_VALUE,Integer.MAX_VALUE)); // true
 
-        // Test 2: invalid BST → expected false
+//        // Test 2: invalid BST → expected false
         TreeNode root2 = new TreeNode(5);
         root2.left = new TreeNode(1);
         root2.right = new TreeNode(4);
         root2.right.left = new TreeNode(3);
         root2.right.right = new TreeNode(6);
-        System.out.println("Test 2: " + solution.isValidBST(root2)); // false
+        System.out.println("Test 2: " + solution.validate(root2,Integer.MIN_VALUE,Integer.MAX_VALUE)); // false
 
         // Test 3: tricky — locally valid but globally invalid → expected false
         //       10
@@ -73,6 +95,6 @@ public class ValidateBST {
         root3.right = new TreeNode(15);
         root3.right.left = new TreeNode(6);   // 6 < 10, invalid!
         root3.right.right = new TreeNode(20);
-        System.out.println("Test 3: " + solution.isValidBST(root3)); // false
+        System.out.println("Test 3: " + solution.validate(root3,Integer.MIN_VALUE,Integer.MAX_VALUE)); // false
     }
 }
